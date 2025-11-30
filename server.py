@@ -1,9 +1,11 @@
 from flask import Flask
 from src.dices_route import dices_bp
+from src.dano_armas_route import dano_armas_bp
 
 app = Flask(__name__)
 
 app.register_blueprint(dices_bp)
+app.register_blueprint(dano_armas_bp)
 
 @app.get("/")
 def home():

@@ -18,6 +18,16 @@ def init_db():
     create_dices(conn, "D_12", "d12", 12)
     create_dices(conn, "D_20", "d20", 20)
 
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS dano_armas (
+            dano_armas_key INTEGER PRIMARY KEY AUTOINCREMENT,
+            descricao TEXT NOT NULL,
+            quantidade_dados INTEGER NOT NULL CHECK (quantidade_dados >= 0),
+            dice_key INTEGER NOT NULL,
+            FOREIGN KEY(dice_key) REFERENCES dices(dice_key)
+        );
+    """)
+
 
 def create_dices(conn: Connection, codigo: str, descricao: str, valor_face: int):
     cursor = conn.cursor()
