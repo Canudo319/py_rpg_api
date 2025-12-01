@@ -14,3 +14,7 @@ def consultar_dano_armas():
     arma_list = [dict(arma) for arma in dano_armas]
 
     return jsonify({"content": arma_list})
+
+@dano_armas_bp.post("/dano-armas")
+def criar_dano_arma():
+    json = request.get_json()
