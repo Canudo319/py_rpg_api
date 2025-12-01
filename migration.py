@@ -4,38 +4,65 @@ from db.database_util import get_db
 
 def init_db():
     conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS dices (
-            dice_key INTEGER PRIMARY KEY AUTOINCREMENT,
-            codigo TEXT UNIQUE NOT NULL,
-            descricao TEXT NOT NULL,
-            valor_faces INTEGER NOT NULL CHECK (valor_faces >= 0)
-        );
-    """)
-
-    create_dices(conn, "D_6", "d6", 6)
-    create_dices(conn, "D_4", "d4", 4)
-    create_dices(conn, "D_12", "d12", 12)
-    create_dices(conn, "D_20", "d20", 20)
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS dano_armas (
-            dano_armas_key INTEGER PRIMARY KEY AUTOINCREMENT,
-            descricao TEXT NOT NULL,
-            quantidade_dados INTEGER NOT NULL CHECK (quantidade_dados >= 0),
-            dice_key INTEGER NOT NULL,
-            FOREIGN KEY(dice_key) REFERENCES dices(dice_key)
-        );
-    """)
-
-
-def create_dices(conn: Connection, codigo: str, descricao: str, valor_face: int):
     cursor = conn.cursor()
-    cursor.execute("SELECT 1 FROM dices WHERE codigo = ?", (codigo,))
-    ok = cursor.fetchone()
-    if not ok:
-        conn.execute("INSERT INTO dices(codigo, descricao, valor_faces) VALUES(?,?,?)", (codigo, descricao, valor_face,))
-        conn.commit()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            usuario_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            senha TEXT NOT NULL
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS conta_bancaria (
+            conta_bancaria_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            numero TEXT NOT NULL,
+            agencia TEXT NOT NULL,
+            banco TEXT NOT NULL
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            cliente_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            conta_bancaria_id INTEGER,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id),
+            FOREIGN KEY(conta_bancaria_id) REFERENCES conta_bancaria(conta_bancaria_id)
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS receitas (
+            receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titulo TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            valor DECIMAL(6,3) NOT NULL
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS formas_pagamento (
+            forma_pagamento_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            codigo TEXT UNIQUE NOT NULL,
+            descricao TEXT NOT NULL
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS compras (
+            compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente_id INTEGER NOT NULL,
+            receita_id INTEGER NOT NULL,
+            valor_total DECIMAL(6,3) NOT NULL,
+            forma_pagamento_id INTEGER NOT NULL,
+            FOREIGN KEY(cliente_id) REFERENCES clientes(cliente_id),
+            FOREIGN KEY(receita_id) REFERENCES receitas(receita_id),
+            FOREIGN KEY(forma_pagamento_id) REFERENCES formas_pagamento(forma_pagamento_id)
+        )
+    """)
 
 
 if(__name__ == "__main__"):
